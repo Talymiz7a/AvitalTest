@@ -1,11 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, CalendarClock, PartyPopper, Sun } from 'lucide-react'
+import { AlertCircle, CalendarClock, PartyPopper, Sun, WifiOff } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { useAgenda } from '../../api/hooks'
 import type { CalendarEvent } from '../../api/types'
 import { PageHeader } from '../../components/Layout'
 import { EventRow } from '../../components/TaskRow'
+import { Button } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/EmptyState'
 
 const greeting = () => {
@@ -16,7 +17,7 @@ const greeting = () => {
 const longDate = new Intl.DateTimeFormat('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })
 
 export default function TodayPage() {
-  const { data, isLoading } = useAgenda()
+  const { data, isLoading, isError, refetch } = useAgenda()
   const today = data?.today ?? []
   const done = today.filter((e) => e.status === 'done').length
 
@@ -32,15 +33,20 @@ export default function TodayPage() {
             <div key={i} className="h-16 animate-pulse rounded-2xl bg-[var(--surface-2)]" />
           ))}
         </div>
+      ) : isError || !data ? (
+        <div className="flex flex-col items-center gap-3">
+          <EmptyState icon={<WifiOff />} title="לא הצלחנו לטעון את המשימות" hint="ודאו שהשרת פועל (./dev.sh) ונסו שוב" />
+          <Button onClick={() => refetch()}>נסו שוב</Button>
+        </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {data!.overdue.length > 0 && (
-            <Group title="באיחור" icon={<AlertCircle className="size-4 text-rose-500" />} events={data!.overdue} />
+          {data.overdue.length > 0 && (
+            <Group title="באיחור" icon={<AlertCircle className="size-4 text-rose-500" />} events={data.overdue} />
           )}
           <Group title="היום" icon={<Sun className="size-4 text-amber-500" />} events={today}>
             <EmptyState icon={<PartyPopper />} title="אין משימות להיום" hint="אפשר להוסיף משימה בכפתור +" />
           </Group>
-          <Group title="בשבוע הקרוב" icon={<CalendarClock className="size-4 text-brand-500" />} events={data!.upcoming}>
+          <Group title="בשבוע הקרוב" icon={<CalendarClock className="size-4 text-brand-500" />} events={data.upcoming}>
             <p className="text-muted text-sm">אין משימות מתוכננות לשבוע הקרוב.</p>
           </Group>
         </div>

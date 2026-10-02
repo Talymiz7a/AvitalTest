@@ -35,7 +35,9 @@ async function request<T>(method: string, path: string, body?: unknown, params?:
     }
     throw new ApiError(message)
   }
-  return res.status === 204 ? (undefined as T) : res.json()
+  if (res.status === 204) return undefined as T
+  if (!res.headers.get('content-type')?.includes('application/json')) throw new ApiError('השרת לא זמין')
+  return res.json()
 }
 
 const occurrenceParams = (scope?: Scope, occurrence?: string | null): Params => ({
