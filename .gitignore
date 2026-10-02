@@ -1,28 +1,24 @@
-# Angular specific
-/dist/
-/out-tsc/
-/tmp/
-/coverage/
-/e2e/test-output/
-/.angular/
-.angular/
+# Dependencies
+node_modules/
+.venv/
 
-# Node modules and dependency files
-/node_modules/
-/package-lock.json
-/yarn.lock
-
-# Environment files
-/.env
-
-# Angular CLI and build artefacts
-/.angular-cli.json
-/.ng/
-
-# TypeScript cache
+# Build output
+dist/
+coverage/
 *.tsbuildinfo
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local data: database + uploaded files (never commit personal data)
+/data/
+
+# Environment / secrets
+.env
+.env.*
+
+# Logs & OS
+*.log
+.DS_Store
