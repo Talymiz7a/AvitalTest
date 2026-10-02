@@ -73,6 +73,34 @@ describe('form ⇄ API conversion', () => {
   })
 })
 
+describe('tasks with only a due date', () => {
+  const dueOnly = {
+    title: 'x', description: null, start_at: null, due_at: '2026-10-06T17:00:00', all_day: false,
+    priority: 'medium', status: 'todo', category_id: null, tags: [], location: null, rollover: false,
+    reminders: [], checklist: [], rrule: null,
+  } as unknown as Task
+
+  it('moves the due date (not a new start) when the date is changed', () => {
+    const before = taskToValues(dueOnly)
+    expect(before.start).toBe('2026-10-06T17:00')
+    const diff = changedFields(valuesToInput(before), valuesToInput({ ...before, start: '2026-10-08T12:00' }))
+    expect(diff).toEqual({ due_at: '2026-10-08T12:00:00' })
+  })
+
+  it('becomes a start + end task when an end is added', () => {
+    const before = taskToValues(dueOnly)
+    const diff = changedFields(valuesToInput(before), valuesToInput({ ...before, end: '2026-10-06T18:00' }))
+    expect(diff).toEqual({ start_at: '2026-10-06T17:00:00', due_at: '2026-10-06T18:00:00' })
+  })
+
+  it('shifts a due-only series when one repeat is moved with "all"', () => {
+    const task = { ...dueOnly, rrule: 'FREQ=DAILY' }
+    const after = { start_at: null, due_at: '2026-10-08T19:00:00' } as never
+    const diff = shiftSeriesTimes(task, '2026-10-08T17:00:00', after, { due_at: '2026-10-08T19:00:00' })
+    expect(diff).toEqual({ due_at: '2026-10-06T19:00:00' })
+  })
+})
+
 describe('repeat rules', () => {
   it('round-trips weekly days, interval and count', () => {
     const fields = { ...parseRRule(null), freq: 'WEEKLY' as const, interval: 2, byday: ['MO', 'WE'], endMode: 'count' as const, count: 5 }

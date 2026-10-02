@@ -134,7 +134,10 @@ def update_task(
             if "start_at" in data:
                 ov.new_start = data["start_at"]
             if "due_at" in data:
-                ov.new_due = data["due_at"]
+                if task.start_at is None:
+                    ov.new_start = data["due_at"]  # due-only series: the due date is when the repeat happens
+                else:
+                    ov.new_due = data["due_at"]
             if "status" in data:
                 ov.status = data["status"]
             session.commit()

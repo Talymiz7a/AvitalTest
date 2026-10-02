@@ -12,6 +12,8 @@ export const taskFormSchema = z
     allDay: z.boolean(),
     start: z.string(), // 'YYYY-MM-DD' when all day, else 'YYYY-MM-DDTHH:mm'; '' = no date
     end: z.string(),
+    // The task has only a due date (no start): the single date field is its due date.
+    dueOnly: z.boolean(),
     priority: z.enum(['low', 'medium', 'high', 'urgent']),
     status: z.enum(['todo', 'in_progress', 'done', 'cancelled']),
     categoryId: z.string(),
@@ -74,6 +76,7 @@ export function emptyValues(defaults?: EditorTarget['defaults']): TaskFormValues
     allDay,
     start: fmt(defaults?.start),
     end: allDay && end && defaults?.start && toDateInput(end) === toDateInput(defaults.start) ? '' : fmt(end),
+    dueOnly: false,
     priority: 'medium',
     status: 'todo',
     categoryId: '',
@@ -98,6 +101,7 @@ export function taskToValues(task: Task, occ?: EditorTarget['occurrence']): Task
     allDay: task.all_day,
     start: toInput(start, task.all_day),
     end: toInput(end, task.all_day),
+    dueOnly: !task.start_at && Boolean(task.due_at),
     priority: task.priority,
     status: (occ?.status ?? task.status) as TaskStatus,
     categoryId: task.category_id ? String(task.category_id) : '',
@@ -114,18 +118,22 @@ export function taskToValues(task: Task, occ?: EditorTarget['occurrence']): Task
 const fromInput = (v: string, allDay: boolean) => (v ? (allDay ? `${v}T00:00:00` : `${v}:00`) : null)
 
 export function valuesToInput(v: TaskFormValues): TaskInput {
-  const start = fromInput(v.start, v.allDay)
+  // A due-only task keeps its one date as the due date, unless an end is added (then it has both).
+  const dueOnly = v.dueOnly && !v.end
+  const start = dueOnly ? null : fromInput(v.start, v.allDay)
+  const due = dueOnly ? fromInput(v.start, v.allDay) : fromInput(v.end, v.allDay)
+  const anchor = start ?? due
   return {
     title: v.title.trim(),
     description: v.description.trim() || null,
     start_at: start,
-    due_at: fromInput(v.end, v.allDay),
+    due_at: due,
     all_day: v.allDay,
     priority: v.priority,
     status: v.status,
     category_id: v.categoryId ? Number(v.categoryId) : null,
     tags: v.tags,
-    rrule: buildRRule(v.repeat, start ? parseLocal(start) : null),
+    rrule: buildRRule(v.repeat, anchor ? parseLocal(anchor) : null),
     rollover: v.rollover,
     location: v.location.trim() || null,
     checklist: v.checklist,
@@ -152,7 +160,12 @@ export function shiftSeriesTimes(
   task: Task, occStart: string, after: TaskInput, diff: Partial<TaskInput>,
 ): Partial<TaskInput> {
   if (!('start_at' in diff) && !('due_at' in diff)) return diff
-  if (!after.start_at) return diff
+  if (!after.start_at) {
+    // Due-only series: move its due date by the same amount the clicked repeat moved.
+    if (task.start_at || !task.due_at || !after.due_at) return diff
+    const delta = parseLocal(after.due_at).getTime() - parseLocal(occStart).getTime()
+    return { ...diff, due_at: toLocalISO(new Date(parseLocal(task.due_at).getTime() + delta)) }
+  }
   const newStart = parseLocal(after.start_at).getTime()
   const anchor = parseLocal((task.start_at ?? task.due_at)!).getTime() + newStart - parseLocal(occStart).getTime()
   return {

@@ -152,3 +152,17 @@ def test_categories_and_tags_crud(client):
     tag = client.post("/api/tags", json={"name": "x"}).json()
     assert client.patch(f"/api/tags/{tag['id']}", json={"name": "y"}).json()["name"] == "y"
     assert client.delete(f"/api/tags/{tag['id']}").status_code == 204
+
+
+def test_due_only_edits(client):
+    t = make(client, due_at="2026-10-06T17:00:00")
+    r = client.patch(f"/api/tasks/{t['id']}", json={"due_at": "2026-10-08T12:00:00"})
+    assert r.status_code == 200 and r.json()["start_at"] is None and r.json()["due_at"] == "2026-10-08T12:00:00"
+
+    # Moving one repeat of a due-only series by its due date moves that repeat.
+    s = make(client, due_at="2026-10-05T17:00:00", rrule="FREQ=DAILY;COUNT=3")
+    r = client.patch(f"/api/tasks/{s['id']}", params={"scope": "this", "occurrence": "2026-10-06T17:00:00"},
+                     json={"due_at": "2026-10-09T10:00:00"})
+    assert r.status_code == 200
+    starts = [e["start"] for e in events(client) if e["task_id"] == s["id"]]
+    assert starts == ["2026-10-05T17:00:00", "2026-10-07T17:00:00", "2026-10-09T10:00:00"]

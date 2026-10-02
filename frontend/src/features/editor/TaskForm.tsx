@@ -89,7 +89,7 @@ function Chip({ active, onClick, children, color }: { active: boolean; onClick: 
 
 export function DateFields({ taskId }: { taskId?: number }) {
   const { register, control, setValue, getValues, formState: { errors } } = useFormContext<TaskFormValues>()
-  const [allDay, start, end] = useWatch({ control, name: ['allDay', 'start', 'end'] })
+  const [allDay, start, end, dueOnly] = useWatch({ control, name: ['allDay', 'start', 'end', 'dueOnly'] })
 
   const toggleAllDay = (next: boolean) => {
     const convert = (v: string) => (!v ? '' : next ? v.slice(0, 10) : `${v.slice(0, 10)}T09:00`)
@@ -104,7 +104,7 @@ export function DateFields({ taskId }: { taskId?: number }) {
       <Toggle checked={allDay} onChange={toggleAllDay} label="כל היום" />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted">{allDay ? 'תאריך' : 'התחלה'}</span>
+          <span className="text-muted">{dueOnly && !end ? 'יעד' : allDay ? 'תאריך' : 'התחלה'}</span>
           <input type={type} className="field" {...register('start')} />
           <FieldError message={errors.start?.message} />
         </label>

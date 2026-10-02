@@ -1,4 +1,4 @@
-"""Background jobs: reminders every minute, smart rules hourly and just after midnight."""
+"""Background jobs: reminders every 30 seconds, smart rules at startup and hourly (minute 1)."""
 
 from datetime import datetime, timedelta
 
