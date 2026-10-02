@@ -1,0 +1,167 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Rubik', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+}
+
+:root {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f3f9;
+  --border: #e4e7ef;
+  --text: #1c2033;
+  --muted: #6b7189;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1120;
+    --surface: #171a2c;
+    --surface-2: #1f2338;
+    --border: #2a2f48;
+    --text: #e8eaf4;
+    --muted: #9aa0bb;
+    color-scheme: dark;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@utility surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+@utility text-muted {
+  color: var(--muted);
+}
+
+/* Skip rendering of off-screen list rows: keeps long lists fast. */
+@utility lazy-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 72px;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0.6rem 0.8rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field:focus {
+  border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-500) 25%, transparent);
+}
+
+/* ---------- FullCalendar theme ---------- */
+.fc {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: var(--surface);
+  --fc-neutral-bg-color: var(--surface-2);
+  --fc-list-event-hover-bg-color: var(--surface-2);
+  --fc-today-bg-color: color-mix(in srgb, var(--color-brand-500) 8%, transparent);
+  --fc-now-indicator-color: #f43f5e;
+  --fc-event-border-color: transparent;
+  font-size: 0.9rem;
+}
+.fc .fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.fc .fc-button {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 0.6rem;
+  text-transform: none;
+  box-shadow: none !important;
+  transition: background 0.15s, transform 0.1s;
+}
+.fc .fc-button:hover {
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+}
+.fc .fc-button:active {
+  transform: scale(0.96);
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: var(--color-brand-600);
+  border-color: var(--color-brand-600);
+  color: #fff;
+}
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  color: var(--muted);
+  font-weight: 500;
+}
+.fc .fc-event {
+  border-radius: 0.5rem;
+  padding: 1px 4px;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
+  animation: event-in 0.25s ease-out both;
+}
+.fc .fc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+}
+.fc .ev-done {
+  opacity: 0.5;
+}
+.fc .ev-done .fc-event-title {
+  text-decoration: line-through;
+}
+.fc .fc-highlight {
+  background: color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+}
+@keyframes event-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@media (max-width: 640px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .fc .fc-toolbar-title {
+    font-size: 1.05rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -58,7 +58,7 @@ def expand(task: Task, frm: datetime, to: datetime) -> list[Occurrence]:
         end = (ov.new_due if ov else None) or _end_of(task, start)
         if start >= to or (end or start) < frm:
             continue
-        status = (ov.status if ov else None) or TaskStatus.todo
+        status = (ov.status if ov else None) or task.status
         result.append(Occurrence(original, start, end, status))
     return result
 
